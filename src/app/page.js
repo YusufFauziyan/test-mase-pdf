@@ -218,7 +218,8 @@ export default function Home() {
           viewer = scope;
         }}
         id="container"
-        documentPath={pdfBlobUrl}
+        // documentPath={pdfBlobUrl}
+        documentPath="https://cors.bodha.co.id/https://dev-ims.bodha.co.id/api/files/x14gj7rvq6ty3mg/vcvb9tv5i2hoxov/da448064_6266_4e9f_948b_8096eb44e64a_5LeDlofiLY.pdf?token="
         resourceUrl="https://cdn.syncfusion.com/ej2/27.2.5/dist/ej2-pdfviewer-lib"
         style={{ height: "640px" }}
       >
