@@ -32,14 +32,18 @@ import {
 } from "@mui/material";
 
 import "./pdf.css";
+import { useGetToken } from "@/utils/files-api";
 
 const URL_PDF =
   "https://cors.bodha.co.id/http://10.1.111.141:30155/api/v2/user/files?path=/PEMBANGUNAN%20JALAN%20TOL%20BANDARA%20DHOHO%20KEDIRI/PPC/WEEKLY%20REPORT/TST-TSTDSP_AL-IS-500%2B500-TAHU-0001/R0/TST-TSTDSP_AL-IS-500%2B500-TAHU-0001%20TERBAU.pdf";
-const TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiQVBJVXNlciIsIjE5Mi4xNjguMTU5LjEyOCJdLCJleHAiOjE3MzYzOTg5NDMsImp0aSI6ImN0dmw3YnM0Y2VpczczYjZkcmwwIiwibmJmIjoxNzM2Mzk3NzEzLCJwZXJtaXNzaW9ucyI6bnVsbCwic3ViIjoiMTczMjE3ODAzMDcyMiIsInVzZXJuYW1lIjoiZGV2ZG9jb24ifQ.90F4QetX7aDImyKAfLLpAOK2g2y-L8taLz-qx7vOYEY";
 
 export default function Home() {
   let viewer;
+
+  const { data: dataToken, refetch: getToken } = useGetToken(false, {
+    username: "devdocon",
+    password: "devdocon",
+  });
 
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -134,7 +138,7 @@ export default function Home() {
       const response = await fetch(URL_PDF, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${TOKEN}`, // Replace with your token
+          Authorization: `Bearer ${dataToken.access_token}`, // Replace with your token
         },
       });
 
@@ -152,8 +156,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchPdf();
-  }, []);
+    if (dataToken?.access_token) {
+      fetchPdf();
+    }
+  }, [dataToken]);
 
   useEffect(() => {
     const textToFind1 =
@@ -199,6 +205,19 @@ export default function Home() {
           Open Modal
         </button>
       </div>
+
+      <PdfViewerComponent
+        ref={(scope) => {
+          viewer = scope;
+        }}
+        id="container"
+        documentPath={pdfBlobUrl}
+        resourceUrl="https://cdn.syncfusion.com/ej2/27.2.5/dist/ej2-pdfviewer-lib"
+        style={{ height: "640px" }}
+      >
+        <Inject services={[Annotation]} />
+      </PdfViewerComponent>
+
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
@@ -228,7 +247,7 @@ export default function Home() {
               id="container"
               documentPath={pdfBlobUrl}
               resourceUrl="https://cdn.syncfusion.com/ej2/27.2.5/dist/ej2-pdfviewer-lib"
-              style={{ height: "640px", width: "100%" }}
+              style={{ height: "640px" }}
               annotationMove={handleMove}
               annotationResize={handleResize}
               documentLoad={handleDocumentLoad}

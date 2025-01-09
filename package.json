@@ -16,6 +16,7 @@
     "@mui/material-nextjs": "^6.3.1",
     "@syncfusion/ej2-react-buttons": "^28.1.37",
     "@syncfusion/ej2-react-pdfviewer": "^28.1.38",
+    "axios": "^1.7.9",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
