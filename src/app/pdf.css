@@ -1,5 +1,5 @@
 #pdfviewer {
-  height: 640px;
+  height: 640px !important;
 }
 
 #linear-pdfviewer {
@@ -125,7 +125,7 @@
 }
 
 #e-pv-e-sign-defaultSidebar {
-  height: 640px;
+  height: 640px !important;
   position: absolute;
   box-shadow: 0px 2px 3px 1px rgba(0, 0, 0, 0.15),
     0px 1px 2px 0px rgba(0, 0, 0, 0.3);

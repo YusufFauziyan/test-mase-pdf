@@ -195,6 +195,13 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const viewer = document.getElementById("container").ej2_instances?.[0];
+    if (viewer) {
+      viewer.refresh(); // Refresh ukuran setelah mount
+    }
+  }, []);
+
   return (
     <div className="h-[100vh] flex item-center flex-col justify-center">
       <div className="flex item-center justify-center">
@@ -210,7 +217,7 @@ export default function Home() {
         ref={(scope) => {
           viewer = scope;
         }}
-        id="container"
+        id="container-pdf"
         documentPath={pdfBlobUrl}
         resourceUrl="https://cdn.syncfusion.com/ej2/27.2.5/dist/ej2-pdfviewer-lib"
         style={{ height: "640px" }}
@@ -247,7 +254,7 @@ export default function Home() {
               id="container"
               documentPath={pdfBlobUrl}
               resourceUrl="https://cdn.syncfusion.com/ej2/27.2.5/dist/ej2-pdfviewer-lib"
-              style={{ height: "640px" }}
+              style={{ height: "640px", width: "100%" }}
               annotationMove={handleMove}
               annotationResize={handleResize}
               documentLoad={handleDocumentLoad}
