@@ -23,7 +23,7 @@ const PdfViewerComponent = dynamic(
     import("@syncfusion/ej2-react-pdfviewer").then(
       (mod) => mod.PdfViewerComponent
     ),
-  { ssr: false }
+  { ssr: true }
 );
 
 const Inject = dynamic(
