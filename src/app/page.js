@@ -1,101 +1,295 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+
+import {
+  PdfViewerComponent,
+  Toolbar,
+  Magnification,
+  Navigation,
+  LinkAnnotation,
+  BookmarkView,
+  ThumbnailView,
+  Print,
+  TextSelection,
+  TextSearch,
+  Annotation,
+  FormFields,
+  FormDesigner,
+  PageOrganizer,
+  Inject,
+} from "@syncfusion/ej2-react-pdfviewer";
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Divider,
+  IconButton,
+} from "@mui/material";
+
+import "./pdf.css";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  let viewer;
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [position, setPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [totalPages, setTotalPages] = useState(0);
+
+  // function
+  const deleteAnnotations = () => {
+    var viewer = document.getElementById("container").ej2_instances[0];
+
+    viewer?.deleteAnnotations();
+  };
+
+  const handleDocumentLoad = () => {
+    const viewer = document.getElementById("container").ej2_instances[0];
+    const pageCount = viewer.pageCount;
+
+    setTotalPages(pageCount); // Update state with total page count
+    console.log("Total Pages:", pageCount);
+  };
+
+  const handleResize = (e) => {
+    setPosition({
+      x: e.annotationBound.x,
+      y: e.annotationBound.y,
+      width: e.annotationBound.width,
+      height: e.annotationBound.height,
+      top: e.annotationBound.top,
+      left: e.annotationBound.left,
+    });
+  };
+
+  const handleMove = (e) => {
+    setPosition({
+      x: e.currentPosition.x,
+      y: e.currentPosition.y,
+      width: e.currentPosition.width,
+      height: e.currentPosition.height,
+      top: e.currentPosition.top,
+      left: e.currentPosition.left,
+    });
+  };
+
+  function downloadClicked() {
+    var viewer = document.getElementById("container").ej2_instances[0];
+
+    console.log(viewer);
+
+    viewer?.download();
+  }
+
+  const stampsAllPage = () => {
+    var viewer = document.getElementById("container").ej2_instances[0];
+
+    deleteAnnotations();
+
+    for (let i = 1; i <= totalPages; i++) {
+      viewer.annotation.addAnnotation("Stamp", {
+        offset: { x: position?.x, y: position?.y },
+        width: position?.width,
+        author: "Guest",
+        height: position?.height,
+        top: position?.top,
+        left: position?.left,
+        pageNumber: i,
+        customStamps: [
+          {
+            customStampName: "Image",
+            // customStampImageSource: convertedImage,
+          },
+        ],
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Menambahkan link CSS Bootstrap ke DOM
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.syncfusion.com/ej2/28.1.33/bootstrap5.css";
+    document.head.appendChild(link);
+
+    // Membersihkan link saat komponen dilepas
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
+  const fetchPdf = async () => {
+    try {
+      const response = await fetch(process.env.NEXT_PUBLIC_URLPDF, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`, // Replace with your token
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching PDF: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      setPdfBlobUrl(blobUrl);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchPdf();
+  }, []);
+
+  useEffect(() => {
+    const textToFind1 =
+      "This application was built using a trial version of Syncfusion Essential Studio. To remove the license validation message permanently, a valid license key must be included.";
+
+    const textToFind =
+      "Claim your FREE account and get a key in less than a minute";
+
+    const observer = new MutationObserver(() => {
+      const elements = document.querySelectorAll("*");
+
+      elements.forEach((element) => {
+        if (element.textContent === textToFind1) {
+          const parentElement = element.parentElement;
+          if (parentElement) {
+            parentElement.style.display = "none";
+          }
+        }
+
+        if (element.textContent === textToFind) {
+          const parentElement = element.parentElement;
+          const grandParentElement = parentElement?.parentElement;
+          if (grandParentElement) {
+            grandParentElement.style.display = "none";
+          }
+        }
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Clean up observer when the component unmounts
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="h-[100vh] flex item-center flex-col justify-center">
+      <div className="flex item-center justify-center">
+        <button
+          className="border rounded-lg px-4 py-2"
+          onClick={() => setOpenDialog(true)}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Open Modal
+        </button>
+      </div>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        fullWidth
+        maxWidth="lg"
+      >
+        <DialogTitle className="grid gap-3">
+          <div className="flex justify-between items-center">
+            <Typography fontSize={24} className="font-semibold">
+              Stamp Document
+            </Typography>
+
+            <IconButton size="small" onClick={setOpenDialog}>
+              <i className="ri-close-line text-2xl" />
+            </IconButton>
+          </div>
+
+          <Divider />
+        </DialogTitle>
+        <DialogContent sx={{ position: "relative" }}>
+          {/* Render the PDF Viewer */}
+          <div className="control-section">
+            <PdfViewerComponent
+              ref={(scope) => {
+                viewer = scope;
+              }}
+              id="container"
+              documentPath={pdfBlobUrl}
+              resourceUrl="https://cdn.syncfusion.com/ej2/27.2.5/dist/ej2-pdfviewer-lib"
+              style={{ height: "640px", width: "100%" }}
+              annotationMove={handleMove}
+              annotationResize={handleResize}
+              documentLoad={handleDocumentLoad}
+              initialRenderPages={50}
+            >
+              <Inject services={[Annotation]} />
+            </PdfViewerComponent>
+          </div>
+        </DialogContent>
+
+        <DialogActions className="flex justify-between items-center mt-5">
+          <div className="flex">
+            <Button variant="outlined" color="primary" onClick={stampsAllPage}>
+              Stamps All Page
+            </Button>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="outlined"
+              onClick={() => setOpenDialog(false)}
+              color="error"
+            >
+              Cancel
+            </Button>
+
+            <Button
+              color="primary"
+              variant="contained"
+              type="submit"
+              className="text-white"
+              // onClick={downloadClicked}
+            >
+              Save
+            </Button>
+          </div>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
+
+const resetGantt = () => {
+  const textToFind =
+    "Claim your FREE account and get a key in less than a minute";
+
+  const textToFind1 =
+    "This application was built using a trial version of Syncfusion Essential Studio. To remove the license validation message permanently, a valid license key must be included.";
+
+  const elements = document.querySelectorAll("*"); // Select all elements in the DOM
+
+  elements.forEach((element) => {
+    if (element.textContent === textToFind1) {
+      const parentElement = element.parentElement; // Get the parent element
+
+      if (parentElement) {
+        parentElement.style.display = "none"; // Hide the parent element
+      }
+    }
+
+    if (element.textContent === textToFind) {
+      const parentElement = element.parentElement; // Get the parent element
+      const grandParentElement = parentElement.parentElement; // Get the grandparent element
+
+      if (grandParentElement) {
+        grandParentElement.style.display = "none"; // Hide the parent element
+      }
+    }
+  });
+};
