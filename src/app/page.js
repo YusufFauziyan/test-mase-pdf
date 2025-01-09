@@ -217,7 +217,7 @@ export default function Home() {
         ref={(scope) => {
           viewer = scope;
         }}
-        id="container-pdf"
+        id="container"
         documentPath={pdfBlobUrl}
         resourceUrl="https://cdn.syncfusion.com/ej2/27.2.5/dist/ej2-pdfviewer-lib"
         style={{ height: "640px" }}
